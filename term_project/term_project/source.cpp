@@ -10,11 +10,9 @@ int main() {
 	g.init();
 	while (true) {
 		if (g.check_5() == true) {
-			break;
+			return 0;;
 		}
 		g.chakshu();
 		g.draw();
 	}
-
-	return 0;
 }
