@@ -58,6 +58,7 @@ void Game_Board::chakshu() {
 	} else { //상대 차례
 		check_closed_4();
 		check_blanked_4();
+		check_opened_3();
 		int max = -1, index_i = 0, index_j = 0;
 		for (int i = 0; i < Board_Size; i++) {
 			for (int j = 0; j < Board_Size; j++) {
@@ -361,6 +362,78 @@ bool Game_Board::check_blanked_3() {
 	return false;
 }
 bool Game_Board::check_opened_3() {
+	//가로
+	for (int j = 0; j < Board_Size; j++) {
+		for (int i = 1; i < Board_Size - 3; i++) {
+			if (gameBoard[i - 1][j].state == -1 && gameBoard[i + 3][j].state == -1) {
+				int cnt = 0;
+				for (int k = 0; k < 3; k++) {
+					if (gameBoard[i + k][j].state == 1)
+						cnt++;
+				}
+				if (cnt == 3) {
+					if (i < Board_Size / 2)
+						gameBoard[i + 3][j].weight = MARK;
+					else
+						gameBoard[i - 1][j].weight = MARK;
+				}
+			}
+		}
+	}
+	//세로
+	for (int i = 0; i < Board_Size; i++) {
+		for (int j = 1; j < Board_Size - 3; j++) {
+			if (gameBoard[i][j - 1].state == -1 && gameBoard[i][j + 3].state == -1) {
+				int cnt = 0;
+				for (int k = 0; k < 3; k++) {
+					if (gameBoard[i][j + k].state == 1)
+						cnt++;
+				}
+				if (cnt == 3) {
+					if (i < Board_Size / 2)
+						gameBoard[i][j + 3].weight = MARK;
+					else
+						gameBoard[i][j - 1].weight = MARK;
+				}
+			}
+		}
+	}
+	//대각선1
+	for (int i = 1; i < Board_Size - 3; i++) {
+		for (int j = 1; j < Board_Size - 3; j++) {
+			if (gameBoard[i - 1][j - 1].state == -1 && gameBoard[i + 3][j + 3].state == -1) {
+				int cnt = 0;
+				for (int k = 0; k < 3; k++) {
+					if (gameBoard[i + k][j + k].state == 1)
+						cnt++;
+				}
+				if (cnt == 3) {
+					if (i < Board_Size / 2)
+						gameBoard[i + 3][j + 3].weight = MARK;
+					else
+						gameBoard[i - 1][j - 1].weight = MARK;
+				}
+			}
+		}
+	}
+	//대각선2
+	for (int i = Board_Size - 1; i > 3; i--) {
+		for (int j = 1; j < Board_Size - 3; j++) {
+			if (gameBoard[i + 1][j - 1].state == -1 && gameBoard[i - 3][j + 3].state == -1) {
+				int cnt = 0;
+				for (int k = 0; k < 3; k++) {
+					if (gameBoard[i - k][j + k].state == 1)
+						cnt++;
+				}
+				if (cnt == 3) {
+					if (i < Board_Size / 2)
+						gameBoard[i - 3][j + 3].weight = MARK;
+					else
+						gameBoard[i + 1][j - 1].weight = MARK;
+				}
+			}
+		}
+	}
 	return false;
 }
 
