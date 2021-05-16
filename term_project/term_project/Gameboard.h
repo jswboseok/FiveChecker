@@ -47,7 +47,7 @@ void Game_Board::chakshu() {
 	if (turn) { //내 차례
 		cout << "점을 선택하시오 : ";
 		cin >> r >> c;
-		if (getGBdata(r, c) != -1) {
+		if (getGBstate(r, c) != -1) {
 			gameBoard[r][c].weight = 0;
 			cout << "다시 선택하세요" << endl << endl;
 		}
