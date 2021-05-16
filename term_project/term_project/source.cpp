@@ -16,6 +16,5 @@ int main() {
 		g.draw();
 	}
 
-	cout << "cloning succeed" << endl;
 	return 0;
 }
