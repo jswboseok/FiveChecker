@@ -57,6 +57,7 @@ void Game_Board::chakshu() {
 		}
 	} else { //상대 차례
 		check_closed_4();
+		check_blanked_4();
 		int max = -1, index_i = 0, index_j = 0;
 		for (int i = 0; i < Board_Size; i++) {
 			for (int j = 0; j < Board_Size; j++) {
@@ -287,6 +288,73 @@ void Game_Board::check_closed_4() {
 	}
 }
 bool Game_Board::check_blanked_4() {
+	//가로
+	for (int j = 0; j < Board_Size; j++) {
+		for (int i = 0; i < Board_Size - 4; i++) {
+			int blank = 0, cnt = 0, blank_index = -1;
+			for (int k = 0; k < 5; k++) {
+				if (gameBoard[i + k][j].state == 1)
+					cnt++;
+				if (i + k != i && i + k != i + 4 && gameBoard[i + k][j].state == -1) {
+					blank++;
+					blank_index = i + k;
+				}
+			}
+			if (blank == 1 && cnt == 4 && blank_index != -1)
+				gameBoard[blank_index][j].weight = MARK;
+		}
+	}
+	//세로
+	for (int i = 0; i < Board_Size; i++) {
+		for (int j = 0; j < Board_Size - 4; j++) {
+			int blank = 0, cnt = 0, blank_index = -1;
+			for (int k = 0; k < 5; k++) {
+				if (gameBoard[i][j + k].state == 1)
+					cnt++;
+				if (j + k != j && j + k != j + 4 && gameBoard[i][j + k].state == -1) {
+					blank++;
+					blank_index = j + k;
+				}
+			}
+			if (blank == 1 && cnt == 4 && blank_index != -1)
+				gameBoard[i][blank_index].weight = MARK;
+		}
+	}
+	//왼쪽 위 -> 오른쪽 아래 대각선
+	for (int i = 0; i < Board_Size - 4;i++) {
+		for (int j = 0; j < Board_Size - 4; j++) {
+			int blank = 0, cnt = 0, blank_index_i = -1, blank_index_j = -1;
+			for (int k = 0; k < 5; k++) {
+				if (gameBoard[i + k][j + k].state == 1)
+					cnt++;
+				if (gameBoard[i + k][j + k].state == -1) {
+					blank++;
+					blank_index_i = i + k;
+					blank_index_j = j + k;
+				}
+			}
+			if (blank == 1 && cnt == 4)
+				gameBoard[blank_index_i][blank_index_j].weight = MARK;
+		}
+	}
+	//오른쪽 위 -> 왼쪽 아래 대각선
+	/*for (int i = Board_Size - 1; i > 3; i--) {
+		for (int j = 0; j < Board_Size - 4; j++) {
+			int blank = 0, cnt = 0, blank_index_i = -1, blank_index_j = -1;
+			for (int k = 0; k < 5; k++) {
+				if (gameBoard[i - k][j + k].state == 1)
+					cnt++;
+				if (gameBoard[i - k][j + k].state == -1) {
+					blank++;
+					blank_index_i = i - k;
+					blank_index_j = j + k;
+				}
+			}
+			if (blank == 1 && cnt == 4)
+				gameBoard[blank_index_i][blank_index_j].weight = MARK;
+		}
+	}*/
+	
 	return false;
 }
 bool Game_Board::check_blanked_3() {
@@ -368,10 +436,10 @@ bool Game_Board::check_5() {
 		for (int j = 0; j < Board_Size - 4; j++) {
 			int mycnt = 0, opcnt = 0;
 			for (int k = 0; k < 5; k++) {
-				if (gameBoard[i + k][j + k].state == 1) {
+				if (gameBoard[i - k][j + k].state == 1) {
 					mycnt++;
 				}
-				else if (gameBoard[i + k][j + k].state == 0) {
+				else if (gameBoard[i - k][j + k].state == 0) {
 					opcnt++;
 				}
 			}
