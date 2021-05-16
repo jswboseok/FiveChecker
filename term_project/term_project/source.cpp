@@ -15,5 +15,7 @@ int main() {
 		g.chakshu();
 		g.draw();
 	}
+
+	cout << "cloning succeed" << endl;
 	return 0;
 }
