@@ -10,7 +10,8 @@ int main() {
 	g.init();
 	while (true) {
 		if (g.check_5() == true) {
-			g.draw();
+			if(g.turn == 0)
+				g.draw();
 			return 0;
 		}
 		g.chakshu();

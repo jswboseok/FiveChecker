@@ -4,7 +4,7 @@
 #include "location.h"
 using namespace std;
 #define Board_Size 10
-#define MARK 99999
+#define MARK 99999 //컴퓨터가 막아야 하는 부분을 마킹
 
 typedef struct spot { //한 지점의 상태값과 가중치
 	int state; // 상태값
