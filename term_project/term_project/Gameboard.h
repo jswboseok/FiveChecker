@@ -19,9 +19,9 @@ public:
 public:
 	void chakshu(); //한 점에 착수
 	void check_closed_4(); //닫힌 4목 확인
-	bool check_blanked_4(); //띈 4목 확인
-	bool check_blanked_3(); //띈 3목 확인
-	bool check_opened_3(); //열린 3목 확인
+	void check_blanked_4(); //띈 4목 확인
+	void check_blanked_3(); //띈 3목 확인
+	void check_opened_3(); //열린 3목 확인
 	bool check_5(); //승리조건 확인
 	int getGBstate(int r, int c); //한 spot의 state 불러옴
 	int getGBweight(int r, int c); //한 spot의 가중치 불러옴
@@ -59,6 +59,7 @@ void Game_Board::chakshu() {
 	} else { //상대 차례
 		check_closed_4();
 		check_blanked_4();
+		check_blanked_3();
 		check_opened_3();
 		int max = -1, index_i = 0, index_j = 0;
 		for (int i = 0; i < Board_Size; i++) {
@@ -289,7 +290,7 @@ void Game_Board::check_closed_4() {
 		}
 	}
 }
-bool Game_Board::check_blanked_4() {
+void Game_Board::check_blanked_4() {
 	//가로
 	for (int j = 0; j < Board_Size; j++) {
 		for (int i = 0; i < Board_Size - 4; i++) {
@@ -356,13 +357,45 @@ bool Game_Board::check_blanked_4() {
 				gameBoard[blank_index_i][blank_index_j].weight = MARK;
 		}
 	}
-	
-	return false;
 }
-bool Game_Board::check_blanked_3() {
-	return false;
+void Game_Board::check_blanked_3() {
+
+	//가로
+	for (int j = 0; j < Board_Size; j++) {
+		for (int i = 0; i < Board_Size - 3; i++) {
+			int index = i, blank = 0, cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i + k, j) == 1)
+					cnt++;
+				if (getGBstate(i + k, j) == -1) {
+					blank++;
+					index = i + k;
+				}
+			}
+			if(blank == 1 && cnt == 3)
+				gameBoard[index][j].weight = MARK;
+		}
+	}
+	//세로
+	for (int i = 0; i < Board_Size; i++) {
+		for (int j = 0; j < Board_Size - 3; j++) {
+			int index = j, blank = 0, cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i, j + k) == 1)
+					cnt++;
+				if (getGBstate(i, j + k) == -1) {
+					blank++;
+					index = j + k;
+				}
+			}
+			if (blank == 1 && cnt == 3)
+				gameBoard[i][index].weight = MARK;
+		}
+	}
+	//대각선1
+	//대각선2
 }
-bool Game_Board::check_opened_3() {
+void Game_Board::check_opened_3() {
 	//가로
 	for (int j = 0; j < Board_Size; j++) {
 		for (int i = 1; i < Board_Size - 3; i++) {
@@ -435,7 +468,6 @@ bool Game_Board::check_opened_3() {
 			}
 		}
 	}
-	return false;
 }
 
 bool Game_Board::check_5() {
