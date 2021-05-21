@@ -4,8 +4,8 @@
 #include "location.h"
 using namespace std;
 #define Board_Size 10
-#define MARK3 99999 //컴퓨터가 막아야 하는 부분을 마킹
-#define MARK4 999999 //컴퓨터가 막아야 하는 부분을 마킹, 4개 짜리가 더 위험하므로
+#define MARK3 9999 //컴퓨터가 막아야 하는 부분을 마킹
+#define MARK4 99999 //컴퓨터가 막아야 하는 부분을 마킹, 4개 짜리가 더 위험하므로
 
 typedef struct spot { //한 지점의 상태값과 가중치
 	int state; // 상태값
@@ -15,7 +15,7 @@ typedef struct spot { //한 지점의 상태값과 가중치
 class Game_Board {
 public:
 	//Location location; //바둑판 위에서 위치를 잡기 위한 멤버 변수
-	spot gameBoard[Board_Size][Board_Size]; //바둑판 선언
+	spot gameBoard[Board_Size + 1][Board_Size + 1]; //바둑판 선언
 	int turn; //1 == 내 차례, 0 == 컴퓨터 차례
 public:
 	void chakshu(); //한 점에 착수
@@ -26,33 +26,37 @@ public:
 	bool check_5(); //승리조건 확인
 	int getGBstate(int r, int c); //한 spot의 state 불러옴
 	int getGBweight(int r, int c); //한 spot의 가중치 불러옴
-	void setGBstate(int r, int c, int value);
-	void setGBweight(int r, int c, int value);
+	void setGBstate(int r, int c, int value); //한 spot의 state 설정
+	void setGBweight(int r, int c, int value); //한 spot의 가중치 설정
 	void draw(); //오목판 그리기
 	void init(int);
 	void calc_weight();
 };
 
 void Game_Board::init(int select) {
-	for (int i = 0; i < Board_Size; i++) {
-		for (int j = 0; j < Board_Size; j++) {
+	for (int i = 1; i < Board_Size + 1; i++) {
+		for (int j = 1; j < Board_Size + 1; j++) {
 			setGBstate(i, j, -1);
 			setGBweight(i, j, 0);
 		}
 	}
 	turn = select;
-	int i = rand() % Board_Size;
-	int j = rand() % Board_Size;
+	int i = rand() % Board_Size + 1;
+	int j = rand() % Board_Size + 1;
 	setGBweight(i, j, MARK3);
 }
 
 void Game_Board::chakshu() {
-	this->calc_weight();
+	calc_weight();
 	int r, c;
 	
-	if (turn) { //내 차례
-		cout << "점을 선택하시오 : ";
-		cin >> r >> c;
+	if (turn == 1) { //내 차례
+		//cout << "점을 선택하시오 : ";
+		do{
+			cout << "입력해주세요(1부터 바둑판 크기까지) >> ";
+			cin >> r >> c;
+		} while (r <= 0 || r > Board_Size || c > Board_Size || c <= 0);
+		
 		if (getGBstate(r, c) != -1) {
 			setGBweight(r, c, 0);
 			cout << "다시 선택하세요" << endl << endl;
@@ -60,7 +64,7 @@ void Game_Board::chakshu() {
 		else {
 			//location.set(r, c);
 			setGBstate(r, c, turn); //내 돌 놓기
-			turn = !turn; //차례 돌리기
+			turn = 0; //차례 돌리기
 		}
 	} 
 	else { //상대 차례
@@ -69,8 +73,8 @@ void Game_Board::chakshu() {
 		check_closed_4();
 		check_blanked_4();
 		int max = -1, index_i = 0, index_j = 0;
-		for (int i = 0; i < Board_Size; i++) {
-			for (int j = 0; j < Board_Size; j++) {
+		for (int i = 1; i <= Board_Size; i++) {
+			for (int j = 1; j <= Board_Size; j++) {
 				if (getGBstate(i, j) != -1) { //돌이 있는 곳 혹시 몰라 weight 다시 0
 					setGBweight(i, j, 0);
 				}
@@ -82,94 +86,82 @@ void Game_Board::chakshu() {
 			}
 		}
 		setGBstate(index_i, index_j, turn); //상대돌 놓기
-		turn = !turn; //차례 돌리기
+		turn = 1; //차례 돌리기
 	}
 }
 void Game_Board::check_closed_4() {
 	//////////////////////
 	//가로 닫힌 4 체크////
 	//////////////////////
-	for (int i = 0; i < Board_Size; i++) { //맨 왼쪽 가로로 닫힌 4
+	for (int i = 1; i <= Board_Size; i++) { //맨 왼쪽 가로로 닫힌 4
 		int cnt = 0;
-		for (int j = 0; j < 4; j++) {
+		for (int j = 1; j <= 4; j++) {
 			if (gameBoard[j][i].state == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(4, i, MARK4);
+			setGBweight(5, i, MARK4);
 	}
-	for (int i = 0; i < Board_Size; i++) { //맨 오른쪽 가로로 닫힌 4
+	for (int i = 1; i <= Board_Size; i++) { //맨 오른쪽 가로로 닫힌 4
 		int cnt = 0;
-		for (int j = 0; j < 4; j++) {
+		for (int j = 1; j <= 4; j++) {
 			if (gameBoard[Board_Size - 1 - j][i].state == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(Board_Size - 5, i, MARK4);
+			setGBweight(Board_Size - 4, i, MARK4);
 	}
-	for (int j = 0; j < Board_Size; j++) { // 가운데 가로로 닫힌 4 -> 왼쪽에 상대돌
-		for (int i = 1; i < Board_Size - 4; i++) {
+	for (int j = 1; j <= Board_Size; j++) { // 가운데 가로로 닫힌 4
+		for (int i = 2; i < Board_Size - 3; i++) {
 			int cnt = 0;
 			for (int k = 0; k < 4; k++) {
-				if (gameBoard[i - 1][j].state == 0 && gameBoard[i + 4][j].state == -1 && getGBstate(i + k, j) == 1)
+				if (getGBstate(i + k, j) == 1)
 					cnt++;
 			}
-			if (cnt == 4)
-				setGBweight(i + 4, j, MARK4);
-		}
-	}
-	for (int j = 0; j < Board_Size; j++) { // 가운데 가로로 닫힌 4 -> 오른쪽에 상대돌
-		for (int i = Board_Size - 2; i >= 5; i--) {
-			int cnt = 0;
-			for (int k = 0; k < 4; k++) {
-				if (gameBoard[i + 1][j].state == 0 && gameBoard[i - 4][j].state == -1 && getGBstate(i - k, j) == 1)
-					cnt++;
+			if (cnt == 4) {
+				if (gameBoard[i - 1][j].state == 0 && gameBoard[i + 4][j].state == -1) //->오른쪽에 놓음
+					setGBweight(i + 4, j, MARK4);
+				else if (gameBoard[i - 1][j].state == -1 && gameBoard[i + 4][j].state == 0) //->왼쪽에 놓음
+					setGBweight(i - 1, j, MARK4);
 			}
-			if (cnt == 4)
-				setGBweight(i - 4, j, MARK4);
+				
 		}
 	}
 	/////////////////////////
 	//세로 닫힌 4 체크////
 	/////////////////////////
-	for (int i = 0; i < Board_Size; i++) { //위쪽 세로로 닫힌 4
+	for (int i = 1; i <= Board_Size; i++) { //위쪽 세로로 닫힌 4
 		int cnt = 0;
-		for (int j = 0; j < 4; j++) {
+		for (int j = 1; j <= 4; j++) {
 			if (getGBstate(i, j) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i, 4, MARK4);
+			setGBweight(i, 5, MARK4);
 	}
-	for (int i = 0; i < Board_Size; i++) { //아래쪽 세로로 닫힌 4
+	for (int i = 1; i <= Board_Size; i++) { //아래쪽 세로로 닫힌 4
 		int cnt = 0;
-		for (int j = 0; j < 4; j++) {
-			if (getGBstate(i, Board_Size - 1 - j) == 1)
+		for (int j = Board_Size; j < Board_Size - 4; j--) {
+			if (getGBstate(i, j) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i, Board_Size - 5, MARK4);
+			setGBweight(i, Board_Size - 4, MARK4);
 	}
-	for (int i = 0; i < Board_Size; i++) { // 가운데 세로로 닫힌 4 -> 위쪽에 상대돌
-		for (int j = 1; j < Board_Size - 4; j++) {
+	for (int i = 1; i <= Board_Size; i++) { // 가운데 세로로 닫힌 4 -> 위쪽에 상대돌
+		for (int j = 2; j <= Board_Size - 3; j++) {
 			int cnt = 0;
 			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i, j - 1) == 0 && getGBstate(i,j + 4) == -1 && getGBstate(i, j + k) == 1)
+				if (getGBstate(i, j + k) == 1)
 					cnt++;
 			}
-			if (cnt == 4)
-				setGBweight(i, j + 4, MARK4);
-		}
-	}
-	for (int i = 0; i < Board_Size; i++) { // 가운데 세로로 닫힌 4 -> 아래쪽에 상대돌
-		for (int j = Board_Size - 2; j >= 5; j--) {
-			int cnt = 0;
-			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i, j + 1) == 0 && getGBstate(i, j - 4) == -1 && getGBstate(i, j - k) == 1)
-					cnt++;
+			if (cnt == 4) {
+				if(getGBstate(i, j - 1) == 0 && getGBstate(i, j + 4) == -1)
+					setGBweight(i, j + 4, MARK4);
+				else if(getGBstate(i, j - 1) == -1 && getGBstate(i, j + 4) == 0)
+					setGBweight(i, j - 1, MARK4);
 			}
-			if (cnt == 4)
-				setGBweight(i, j - 4, MARK4);
+				
 		}
 	}
 	
@@ -177,130 +169,117 @@ void Game_Board::check_closed_4() {
 	///////////////////////////////////////////////////////
 	/////왼쪽 위 -> 오른쪽 아래 대각선으로 닫힌 4 체크/////
 	///////////////////////////////////////////////////////
-	for (int i = 0; i < Board_Size - 4; i++) { //맨 위쪽(j == 0) 대각선으로 닫힌 4
+	for (int i = 1; i <= Board_Size - 4; i++) { //맨 위쪽(j == 0) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int j = 0; j < 4; j++) {
-			if (getGBstate(i + j, j) == 1)
+			if (getGBstate(i + j, j + 1) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i + 4, 4, MARK4);
+			setGBweight(i + 4, 5, MARK4);
 	}
-	for (int j = 0; j < Board_Size - 4; j++) { // 맨 오른쪽(i == 0) 대각선으로 닫힌 4
+	for (int j = 1; j <= Board_Size - 4; j++) { // 맨 오른쪽(i == 0) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int i = 0; i < 4; i++) {
-			if (getGBstate(i, j + i) == 1)
+			if (getGBstate(i + 1, j + i) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(4, j + 4, MARK4);
+			setGBweight(5, j + 4, MARK4);
 	}
-	for (int j = 4; j < Board_Size; j++) { // 맨 왼쪽(i == Board_Size) 대각선으로 닫힌 4
+	for (int j = 5; j <= Board_Size; j++) { // 맨 왼쪽(i == Board_Size) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int i = 0; i < 4; i++) {
-			if (getGBstate(Board_Size - 1 - i, j - i) == 1)
+			if (getGBstate(Board_Size - i, j - i) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(Board_Size - 5, j - 4, MARK4);
+			setGBweight(Board_Size - 4, j - 4, MARK4);
 	}
-	for (int i = 4; i < Board_Size; i++) { //맨 아래쪽(j == Board_size) 대각선으로 닫힌 4
+	for (int i = 5; i <= Board_Size; i++) { //맨 아래쪽(j == Board_size) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int j = 0; j < 4; j++) {
-			if (getGBstate(i - j, Board_Size - 1 - j) == 1)
+			if (getGBstate(i - j, Board_Size  - j) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i - 4, Board_Size - 5, MARK4);
+			setGBweight(i - 4, Board_Size - 4, MARK4);
 	}
-	for (int i = 1; i < Board_Size - 4; i++) { //가운데 대각선으로 닫힌 4 -> 위쪽에 돌
-		for (int j = 1; j < Board_Size - 4; j++) {
+	for (int i = 2; i <= Board_Size - 4; i++) { //가운데 대각선으로 닫힌 4 -> 위쪽에 돌
+		for (int j = 2; j <= Board_Size - 4; j++) {
 			int cnt = 0;
 			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i - 1, j - 1) == 0 && getGBstate(i + 4, j + 4) == -1 && getGBstate(i + k, j + k) == 1)
+				if (getGBstate(i + k, j + k) == 1)
 					cnt++;
 			}
-			if (cnt == 4)
-				setGBweight(i + 4, j + 4, MARK4);
-		}
-	}
-	for (int i = Board_Size - 2; i > 4; i--) { //가운데 대각선으로 닫힌 4 -> 아래쪽에 돌
-		for (int j = Board_Size - 2; j > 4; j--) {
-			int cnt = 0;
-			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i + 1, j + 1) == 0 && getGBstate(i - 4, j - 4) == -1 && getGBstate(i - k, j - k) == 1)
-					cnt++;
+			if (cnt == 4) {
+				if(getGBstate(i - 1, j - 1) == 0 && getGBstate(i + 4, j + 4) == -1)
+					setGBweight(i + 4, j + 4, MARK4);
+				else if(getGBstate(i - 1, j - 1) == -1 && getGBstate(i + 4, j + 4) == 0)
+					setGBweight(i - 1, j - 1, MARK4);
 			}
-			if (cnt == 4)
-				setGBweight(i - 4, j - 4, MARK4);
 		}
 	}
 	//////////////////////////////////////////////////////////////
 	///////오른쪽 위 -> 왼쪽 아래 대각선으로 닫힌 4 체크//////////
 	//////////////////////////////////////////////////////////////
-	for (int i = 4; i < Board_Size; i++) { //맨 위쪽(j == 0) 대각선으로 닫힌 4
+	for (int i = 5; i <= Board_Size; i++) { //맨 위쪽(j == 0) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int j = 0; j < 4; j++) {
-			if (gameBoard[i - j][j].state == 1)
+			if (gameBoard[i - j][j + 1].state == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i - 4, 4, MARK4);
+			setGBweight(i - 4, 5, MARK4);
 	}
-	for (int j = 4; j < Board_Size; j++) { // 맨 오른쪽(i == 0) 대각선으로 닫힌 4
+	for (int j = 5; j <= Board_Size; j++) { // 맨 왼쪽(i == 0) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int i = 0; i < 4; i++) {
-			if (getGBstate(j - i, i) == 1)
+			if (getGBstate(i + 1, j - i) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(j - 4, 4, MARK4);
+			setGBweight(5, j - 4, MARK4);
 	}
-	for (int j = 0; j < Board_Size - 4; j++) { // 맨 왼쪽(i == Board_Size) 대각선으로 닫힌 4
+	for (int j = 1; j <= Board_Size - 4; j++) { // 맨 오른쪽(i == Board_Size) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int i = 0; i < 4; i++) {
-			if (getGBstate(Board_Size - 1 - i, j + i) == 1)
+			if (getGBstate(Board_Size - i, j + i) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(Board_Size - 5, j + 4, MARK4);
+			setGBweight(Board_Size - 4, j + 4, MARK4);
 	}
-	for (int i = 0; i < Board_Size - 4; i++) { //맨 아래쪽(j == Board_size) 대각선으로 닫힌 4
+	for (int i = 1; i <= Board_Size - 4; i++) { //맨 아래쪽(j == Board_size) 대각선으로 닫힌 4
 		int cnt = 0;
 		for (int j = 0; j < 4; j++) {
-			if (getGBstate(i + j, Board_Size - 1 - j) == 1)
+			if (getGBstate(i + j, Board_Size - j) == 1)
 				cnt++;
 		}
 		if (cnt == 4)
-			setGBweight(i + 4, Board_Size - 5, MARK4);
+			setGBweight(i + 4, Board_Size - 4, MARK4);
 	}
-	for (int i = Board_Size - 2; i > 4; i--) { //가운데 대각선으로 닫힌 4 -> 위쪽에 돌
-		for (int j = 1; j < Board_Size - 4; j++) {
+	for (int i = 5; i <= Board_Size - 1; i++) { //가운데 대각선으로 닫힌 4 -> 위쪽에 돌
+		for (int j = 2; j <= Board_Size - 4; j++) {
 			int cnt = 0;
 			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i + 1, j - 1) == 0 && getGBstate(i - 4, j + 4) == -1 && getGBstate(i - k, j + k) == 1)
+				if (getGBstate(i - k, j + k) == 1)
 					cnt++;
 			}
-			if (cnt == 4)
-				setGBweight(i - 4, j + 4, MARK4);
-		}
-	}
-	for (int i = 1; i < Board_Size - 4; i++) { //가운데 대각선으로 닫힌 4 -> 아래쪽에 돌
-		for (int j = 1; j < Board_Size - 4; j++) {
-			int cnt = 0;
-			for (int k = 0; k < 4; k++) {
-				if (getGBstate(i - 1, j + 1) == 0 && getGBstate(i + 4, j - 4) == -1 && getGBstate(i + k, j - k) == 1)
-					cnt++;
+			if (cnt == 4) {
+				if (getGBstate(i + 1, j - 1) == 0 && getGBstate(i - 4, j + 4) == -1)
+					setGBweight(i - 4, j + 4, MARK4);
+				else if(getGBstate(i + 1, j - 1) == -1 && getGBstate(i - 4, j + 4) == 0)
+					setGBweight(i + 1, j - 1, MARK4);
 			}
-			if (cnt == 4)
-				setGBweight(i + 4, j - 4, MARK4);
 		}
 	}
 }
+
 void Game_Board::check_blanked_4() {
 	//가로
-	for (int j = 0; j < Board_Size; j++) {
-		for (int i = 0; i < Board_Size - 4; i++) {
+	for (int j = 1; j <= Board_Size; j++) {
+		for (int i = 1; i <= Board_Size - 4; i++) {
 			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j) == 1)
@@ -315,8 +294,8 @@ void Game_Board::check_blanked_4() {
 		}
 	}
 	//세로
-	for (int i = 0; i < Board_Size; i++) {
-		for (int j = 0; j < Board_Size - 4; j++) {
+	for (int i = 1; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
 			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i, j + k) == 1)
@@ -331,8 +310,8 @@ void Game_Board::check_blanked_4() {
 		}
 	}
 	//왼쪽 위 -> 오른쪽 아래 대각선
-	for (int i = 0; i < Board_Size - 4;i++) {
-		for (int j = 0; j < Board_Size - 4; j++) {
+	for (int i = 1; i <= Board_Size - 4;i++) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
 			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j + k) == 1)
@@ -347,28 +326,27 @@ void Game_Board::check_blanked_4() {
 		}
 	}
 	//오른쪽 위 -> 왼쪽 아래 대각선
-	for (int i = Board_Size - 1; i > 3; i--) {
-		for (int j = 0; j < Board_Size - 4; j++) {
-			int blank = 0, cnt = 0, blank_index_i = -1, blank_index_j = -1;
+	for (int i = Board_Size; i > 4; i--) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
+			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i - k, j + k) == 1)
 					cnt++;
 				if (getGBstate(i - k, j + k) == -1) {
 					blank++;
-					blank_index_i = i - k;
-					blank_index_j = j + k;
+					index = k;
 				}
 			}
 			if (blank == 1 && cnt == 4)
-				setGBweight(blank_index_i, blank_index_j,MARK4);
+				setGBweight(i - index, j + index, MARK4);
 		}
 	}
 }
 void Game_Board::check_blanked_3() {
 
 	//가로
-	for (int j = 0; j < Board_Size; j++) {
-		for (int i = 0; i < Board_Size - 3; i++) {
+	for (int j = 1; j <= Board_Size; j++) {
+		for (int i = 1; i <= Board_Size - 3; i++) {
 			int index = i, blank = 0, cnt = 0;
 			for (int k = 0; k < 4; k++) {
 				if (getGBstate(i + k, j) == 1)
@@ -383,8 +361,8 @@ void Game_Board::check_blanked_3() {
 		}
 	}
 	//세로
-	for (int i = 0; i < Board_Size; i++) {
-		for (int j = 0; j < Board_Size - 3; j++) {
+	for (int i = 1; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
 			int index = j, blank = 0, cnt = 0;
 			for (int k = 0; k < 4; k++) {
 				if (getGBstate(i, j + k) == 1)
@@ -399,8 +377,8 @@ void Game_Board::check_blanked_3() {
 		}
 	}
 	//대각선1
-	for (int i = 0; i < Board_Size - 3; i++) {
-		for (int j = 0; j < Board_Size - 3; j++) {
+	for (int i = 1; i <= Board_Size - 3; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
 			int index = 0, blank = 0, cnt = 0;
 			for (int k = 0; k < 4; k++) {
 				if (getGBstate(i + k, j + k) == 1)
@@ -415,8 +393,8 @@ void Game_Board::check_blanked_3() {
 		}
 	}
 	//대각선2
-	for (int i = 3; i < Board_Size; i++) {
-		for (int j = 0; j < Board_Size - 3; j++) {
+	for (int i = 4; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
 			int index = 0, blank = 0, cnt = 0;
 			for (int k = 0; k < 4; k++) {
 				if (getGBstate(i - k, j + k) == 1)
@@ -433,9 +411,9 @@ void Game_Board::check_blanked_3() {
 }
 void Game_Board::check_opened_3() {
 	//가로
-	for (int j = 0; j < Board_Size; j++) {
-		for (int i = 1; i < Board_Size - 3; i++) {
-			if (getGBstate(i - 1, j) == -1 && getGBstate(i + 3, j) == -1) {
+	for (int j = 1; j <= Board_Size; j++) {
+		for (int i = 1; i <= Board_Size - 3; i++) {
+			if (getGBstate(i - 1, j) == -1 && getGBstate(i + 3, j) == -1) { //양 쪽이 비었을때만
 				int cnt = 0;
 				for (int k = 0; k < 3; k++) {
 					if (getGBstate(i + k, j) == 1)
@@ -443,34 +421,34 @@ void Game_Board::check_opened_3() {
 				}
 				if (cnt == 3) {
 					if (i < Board_Size / 2)
-						setGBweight(i - 3, j, MARK3);
+						setGBweight(i - 1, j, MARK3);
 					else
-						setGBweight(i + 1, j, MARK3);
+						setGBweight(i + 3, j, MARK3);
 				}
 			}
 		}
 	}
 	//세로
-	for (int i = 0; i < Board_Size; i++) {
-		for (int j = 1; j < Board_Size - 3; j++) {
-			if (getGBstate(i, j - 1) == -1 && getGBstate(i, j + 3) == -1) {
+	for (int i = 1; i <= Board_Size; i++) {
+		for (int j = 2; j <= Board_Size - 3; j++) {
+			if (getGBstate(i, j - 1) == -1 && getGBstate(i, j + 3) == -1) {//양 쪽이 비었을때만
 				int cnt = 0;
 				for (int k = 0; k < 3; k++) {
 					if (getGBstate(i, j + k) == 1)
 						cnt++;
 				}
 				if (cnt == 3) {
-					if (i < Board_Size / 2)
-						setGBweight(i, j - 3, MARK3);
-					else
+					if (j < Board_Size / 2)
 						setGBweight(i, j - 1, MARK3);
+					else
+						setGBweight(i, j + 3, MARK3);
 				}
 			}
 		}
 	}
 	//대각선1
-	for (int i = 1; i < Board_Size - 3; i++) {
-		for (int j = 1; j < Board_Size - 3; j++) {
+	for (int i = 2; i <= Board_Size - 3; i++) {
+		for (int j = 2; j <= Board_Size - 3; j++) {
 			if (getGBstate(i - 1, j - 1) == -1 && getGBstate(i + 3, j + 3) == -1) {
 				int cnt = 0;
 				for (int k = 0; k < 3; k++) {
@@ -479,16 +457,16 @@ void Game_Board::check_opened_3() {
 				}
 				if (cnt == 3) {
 					if (i < Board_Size / 2)
-						setGBweight(i - 3, j - 3, MARK3);
+						setGBweight(i - 1, j - 1, MARK3);
 					else
-						setGBweight(i + 1, j - 1, MARK3);
+						setGBweight(i + 3, j + 3, MARK3);
 				}
 			}
 		}
 	}
 	//대각선2
-	for (int i = Board_Size - 1; i > 2; i--) {
-		for (int j = 1; j < Board_Size - 3; j++) {
+	for (int i = Board_Size; i > 3; i--) {
+		for (int j = 2; j <= Board_Size - 3; j++) {
 			if (getGBstate(i + 1, j - 1) == -1 && getGBstate(i - 3, j + 3) == -1) {
 				int cnt = 0;
 				for (int k = 0; k < 3; k++) {
@@ -497,9 +475,9 @@ void Game_Board::check_opened_3() {
 				}
 				if (cnt == 3) {
 					if (i < Board_Size / 2)
-						setGBweight(i - 3, j - 3, MARK3);
-					else
 						setGBweight(i + 1, j - 1, MARK3);
+					else
+						setGBweight(i - 3, j + 3, MARK3);
 				}
 			}
 		}
@@ -508,8 +486,8 @@ void Game_Board::check_opened_3() {
 
 bool Game_Board::check_5() {
 	//가로 체크
-	for (int i = 0; i < Board_Size - 4; i++) {
-		for (int j = 0; j < Board_Size; j++) {
+	for (int i = 1; i <= Board_Size - 4; i++) {
+		for (int j = 1; j <= Board_Size; j++) {
 			int mycnt = 0, opcnt = 0;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j) == 1) {
@@ -530,8 +508,8 @@ bool Game_Board::check_5() {
 		}
 	}
 	//세로 체크
-	for (int i = 0; i < Board_Size; i++) {
-		for (int j = 0; j < Board_Size - 4; j++) {
+	for (int i = 1; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
 			int mycnt = 0, opcnt = 0;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i, j + k) == 1) {
@@ -552,8 +530,8 @@ bool Game_Board::check_5() {
 		}
 	}
 	//왼쪽 위 -> 오른쪽 아래 대각선 체크
-	for (int i = 0; i < Board_Size - 4; i++) {
-		for (int j = 0; j < Board_Size - 4; j++) {
+	for (int i = 1; i <= Board_Size - 4; i++) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
 			int mycnt = 0, opcnt = 0;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j + k) == 1) {
@@ -574,8 +552,8 @@ bool Game_Board::check_5() {
 		}
 	}
 	//오른쪽 위 -> 왼쪽 아래 대각선 체크
-	for (int i = Board_Size - 1; i > 4; i--) {
-		for (int j = 0; j < Board_Size - 4; j++) {
+	for (int i = Board_Size; i >= 5; i--) {
+		for (int j = 1; j <= Board_Size - 4; j++) {
 			int mycnt = 0, opcnt = 0;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i - k, j + k) == 1) {
@@ -612,22 +590,28 @@ void Game_Board::setGBweight(int r, int c, int value) {
 }
 
 void Game_Board::draw() {
-	this->calc_weight();
+	calc_weight();
 	cout << endl;
-	for (int i = -1; i < Board_Size; i++) {
-		if (i == -1)
-			cout << "    ";
+	for (int i = 0; i <= Board_Size; i++) {
+		if (i == 0)
+			cout << "      ";
 		else
 			cout << i << " ";
 	}
 	cout << endl;
-	for (int i = -1; i <= Board_Size; i++)
+	for (int i = 0; i <= Board_Size + 2; i++)
 		cout << "==";
 	cout << endl;
 
-	for (int j = 0; j < Board_Size; j++) {
-		cout << j << " | ";
-		for (int i = 0; i < Board_Size; i++) {
+	for (int j = 1; j <= Board_Size; j++) {
+		if(j >= 100)
+			cout << j << " | ";
+		else if (j < 100 && j >= 10) 
+			cout << j << "  | ";
+		else
+			cout << j << "   | ";
+		
+		for (int i = 1; i <= Board_Size; i++) {
 			if (getGBstate(i, j) == -1) {
 				cout << "+ ";
 			}
@@ -644,18 +628,18 @@ void Game_Board::draw() {
 }
 
 void Game_Board::calc_weight() { //가중치 구하기
-	for (int i = 0; i < Board_Size; i++) { //weight 초기화
-		for (int j = 0; j < Board_Size; j++) {
-			if (gameBoard[i][j].weight < 1000) { //MARK4보다 훨씬 작은 수는 MARK4ING이 안된 것이라는 의미이므로
+	for (int i = 1; i <= Board_Size; i++) { //weight 초기화
+		for (int j = 1; j <= Board_Size; j++) {
+			if (getGBweight(i, j) < 1000) { //MARK4보다 훨씬 작은 수는 MARK4ING이 안된 것이라는 의미이므로
 				setGBweight(i, j, 0);
 			}
 		}
 	}
 
-	for (int j = 0; j < Board_Size; j++) {
-		for (int i = 0; i < Board_Size; i++) {
-			if (j == 0) { // 위
-				if (i == 0) {//왼쪽 위 모서리
+	for (int j = 1; j <= Board_Size; j++) {
+		for (int i = 1; i <= Board_Size; i++) {
+			if (j == 1) { // 위
+				if (i == 1) {//왼쪽 위 모서리
 					if (getGBstate(i, j) == 1) { //상대 돌이면 가중치 -2
 						gameBoard[i + 1][j].weight -= 2;
 						gameBoard[i + 1][j + 1].weight -= 2;
@@ -667,7 +651,7 @@ void Game_Board::calc_weight() { //가중치 구하기
 						gameBoard[i][j + 1].weight += 2;
 					}
 				}
-				else if (i == 9) { //오른쪽 위
+				else if (i == Board_Size) { //오른쪽 위
 					if (getGBstate(i, j) == 1) { //상대 돌이면 가중치 -2
 						gameBoard[i][j - 1].weight -= 2;
 						gameBoard[i - 1][j - 1].weight -= 2;
@@ -696,8 +680,8 @@ void Game_Board::calc_weight() { //가중치 구하기
 					}
 				}
 			}
-			else if (j == 9) { //밑
-				if (i == 0) {//왼쪽 아래 모서리
+			else if (j == Board_Size) { //밑
+				if (i == 1) {//왼쪽 아래 모서리
 					if (getGBstate(i, j) == 1) { //상대 돌이면 가중치 -2
 						gameBoard[i + 1][j].weight -= 2;
 						gameBoard[i + 1][j - 1].weight -= 2;
@@ -709,7 +693,7 @@ void Game_Board::calc_weight() { //가중치 구하기
 						gameBoard[i][j - 1].weight += 2;
 					}
 				}
-				else if (i == 9) { //오른쪽 아래 모서리
+				else if (i == Board_Size) { //오른쪽 아래 모서리
 					if (getGBstate(i, j) == 1) { //상대 돌이면 가중치 -2
 						gameBoard[i - 1][j].weight -= 2;
 						gameBoard[i - 1][j - 1].weight -= 2;
@@ -765,8 +749,53 @@ void Game_Board::calc_weight() { //가중치 구하기
 		}
 	}
 
-	for (int j = 0; j < Board_Size; j++) { //바둑돌이 놓여진 곳의 가중치는 고려 안하기 때문
-		for (int i = 0; i < Board_Size; i++) {
+	for (int j = 1; j <= Board_Size; j++) {
+		for (int i = 1; i <= Board_Size; i++) {
+			int cnt = 0;
+			if (getGBstate(i, j) == 0) {
+				//1. 가로로 많은 곳에 가중치 더하기
+				int k = 0;
+				while (i + k <= Board_Size || getGBstate(i + k, j) != 0) {
+					cnt++;
+					k++;
+				}
+				if (i + k > Board_Size) { //i + k가 끝 부분일 때
+					if(getGBstate(i - 1, j) == -1) //다른 한 쪽(i - 1)이 가능하면
+						setGBweight(i - 1, j, getGBweight(i - 1, j) + (2 * cnt)); //거기다 가중치 더함
+				}
+				else {
+					if (getGBstate(i + k, j) != -1) { //i + k에 돌이 놓여졌으면
+						if (i - 1 != 0 && getGBstate(i - 1, j) == -1) //i - 1 확인 후 가중치 더해줌
+							setGBweight(i - 1, j, getGBweight(i - 1, j) + (2 * cnt));
+					}
+					else 
+						setGBweight(i + k, j, getGBweight(i + k, j) + (2 * cnt)); //나머진 그냥 i + k에 가중치 더해줌
+				}
+				//2. 세로로 많은 곳에 가중치 더하기
+				k = 0, cnt = 0;
+				while (j + k <= Board_Size || getGBstate(i, j + k) != 0) {
+					cnt++;
+					k++;
+				}
+				if (j + k > Board_Size) { //j + k가 끝 부분일 때
+					if (getGBstate(i, j - 1) == -1) //다른 한 쪽(j - 1)이 가능하면
+						setGBweight(i, j - 1, getGBweight(i, j - 1) + (2 * cnt)); //거기다 가중치 더함
+				}
+				else {
+					if (getGBstate(i, j + k) != -1) { //j + k에 돌이 놓여졌으면
+						if (j - 1 != 0 && getGBstate(i, j - 1) == -1) //j - 1 확인 후 가중치 더해줌
+							setGBweight(i, j - 1, getGBweight(i, j - 1) + (2 * cnt));
+					}
+					else
+						setGBweight(i, j + k, getGBweight(i, j + k) + (2 * cnt)); //나머진 그냥 j + k에 가중치 더해줌
+				}
+			}
+		}
+	}
+
+
+	for (int j = 1; j <= Board_Size; j++) { //바둑돌이 놓여진 곳의 가중치는 고려 안하기 때문
+		for (int i = 1; i <= Board_Size; i++) {
 			if (getGBstate(i, j) != -1 && gameBoard[i][j].weight != 0) {
 				setGBweight(i, j, 0);
 			}
