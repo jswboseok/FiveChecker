@@ -26,18 +26,18 @@ public:
 	int getGBstate(int r, int c); //한 spot의 state 불러옴
 	int getGBweight(int r, int c); //한 spot의 가중치 불러옴
 	void draw(); //오목판 그리기
-	void init();
+	void init(int);
 	void calc_weight();
 };
 
-void Game_Board::init() {
+void Game_Board::init(int select) {
 	for (int i = 0; i < Board_Size; i++) {
 		for (int j = 0; j < Board_Size; j++) {
 			gameBoard[i][j].state = -1;
 			gameBoard[i][j].weight = 0;
 		}
 	}
-	turn = 0;
+	turn = select;
 }
 
 void Game_Board::chakshu() {
