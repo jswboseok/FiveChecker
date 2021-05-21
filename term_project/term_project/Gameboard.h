@@ -294,50 +294,49 @@ void Game_Board::check_blanked_4() {
 	//가로
 	for (int j = 0; j < Board_Size; j++) {
 		for (int i = 0; i < Board_Size - 4; i++) {
-			int blank = 0, cnt = 0, blank_index = -1;
+			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j) == 1)
 					cnt++;
 				if ((i + k != i || i + k != i + 4) && getGBstate(i + k, j) == -1) {
 					blank++;
-					blank_index = i + k;
+					index = i + k;
 				}
 			}
-			if (blank == 1 && cnt == 4 && blank_index != -1)
-				gameBoard[blank_index][j].weight = MARK;
+			if (blank == 1 && cnt == 4 && index != -1)
+				gameBoard[index][j].weight = MARK;
 		}
 	}
 	//세로
 	for (int i = 0; i < Board_Size; i++) {
 		for (int j = 0; j < Board_Size - 4; j++) {
-			int blank = 0, cnt = 0, blank_index = -1;
+			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i, j + k) == 1)
 					cnt++;
 				if ((j + k != j || j + k != j + 4) && getGBstate(i, j + k) == -1) {
 					blank++;
-					blank_index = j + k;
+					index = j + k;
 				}
 			}
-			if (blank == 1 && cnt == 4 && blank_index != -1)
-				gameBoard[i][blank_index].weight = MARK;
+			if (blank == 1 && cnt == 4 && index != -1)
+				gameBoard[i][index].weight = MARK;
 		}
 	}
 	//왼쪽 위 -> 오른쪽 아래 대각선
 	for (int i = 0; i < Board_Size - 4;i++) {
 		for (int j = 0; j < Board_Size - 4; j++) {
-			int blank = 0, cnt = 0, blank_index_i = -1, blank_index_j = -1;
+			int blank = 0, cnt = 0, index = -1;
 			for (int k = 0; k < 5; k++) {
 				if (getGBstate(i + k, j + k) == 1)
 					cnt++;
 				if (getGBstate(i + k, j + k) == -1) {
 					blank++;
-					blank_index_i = i + k;
-					blank_index_j = j + k;
+					index = k;
 				}
 			}
 			if (blank == 1 && cnt == 4)
-				gameBoard[blank_index_i][blank_index_j].weight = MARK;
+				gameBoard[i + index][j + index].weight = MARK;
 		}
 	}
 	//오른쪽 위 -> 왼쪽 아래 대각선
@@ -393,7 +392,37 @@ void Game_Board::check_blanked_3() {
 		}
 	}
 	//대각선1
+	for (int i = 0; i < Board_Size - 3; i++) {
+		for (int j = 0; j < Board_Size - 3; j++) {
+			int index = 0, blank = 0, cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i + k, j + k) == 1)
+					cnt++;
+				if (getGBstate(i + k, j + k) == -1) {
+					blank++;
+					index = k;
+				}
+			}
+			if (blank == 1 && cnt == 3)
+				gameBoard[i + index][j + index].weight = MARK;
+		}
+	}
 	//대각선2
+	for (int i = 3; i < Board_Size; i++) {
+		for (int j = 0; j < Board_Size - 3; j++) {
+			int index = 0, blank = 0, cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i - k, j + k) == 1)
+					cnt++;
+				if (getGBstate(i - k, j + k) == -1) {
+					blank++;
+					index = k;
+				}
+			}
+			if (blank == 1 && cnt == 3)
+				gameBoard[i - index][j + index].weight = MARK;
+		}
+	}
 }
 void Game_Board::check_opened_3() {
 	//가로
@@ -451,7 +480,7 @@ void Game_Board::check_opened_3() {
 		}
 	}
 	//대각선2
-	for (int i = Board_Size - 1; i > 3; i--) {
+	for (int i = Board_Size - 1; i > 2; i--) {
 		for (int j = 1; j < Board_Size - 3; j++) {
 			if (getGBstate(i + 1, j - 1) == -1 && getGBstate(i - 3, j + 3) == -1) {
 				int cnt = 0;
