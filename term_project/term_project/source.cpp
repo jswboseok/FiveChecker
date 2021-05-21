@@ -27,8 +27,6 @@ int main() {
 	g.init(select);
 	while (true) {
 		if (g.check_5() == true) {
-			if(g.turn == 0)
-				g.draw();
 			return 0;
 		}
 		g.chakshu();

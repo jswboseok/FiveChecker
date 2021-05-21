@@ -38,6 +38,9 @@ void Game_Board::init(int select) {
 		}
 	}
 	turn = select;
+	int i = rand() % Board_Size;
+	int j = rand() % Board_Size;
+	gameBoard[i][j].weight = MARK;
 }
 
 void Game_Board::chakshu() {
@@ -56,7 +59,8 @@ void Game_Board::chakshu() {
 			gameBoard[r][c].state = turn; //내 돌 놓기
 			turn = !turn; //차례 돌리기
 		}
-	} else { //상대 차례
+	} 
+	else { //상대 차례
 		check_closed_4();
 		check_blanked_4();
 		check_blanked_3();
