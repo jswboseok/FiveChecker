@@ -26,6 +26,7 @@ public:
 	void check_blanked_3(); //띈 3목 확인
 	void check_closed_4(); //닫힌 4목 확인
 	void check_blanked_4(); //띈 4목 확인
+	void check_win();
 	
 	bool check_5(); //승리조건 확인
 	int getGBstate(int r, int c); //한 spot의 state 불러옴
@@ -51,7 +52,6 @@ void Game_Board::init(int select) {
 }
 
 void Game_Board::chakshu() {
-	calc_weight();
 	int r, c;
 	
 	if (turn == 1) { //내 차례
@@ -84,6 +84,7 @@ void Game_Board::chakshu() {
 		check_closed_4();
 		check_opened_3();
 		check_blanked_4();
+		calc_weight();
 		int max = -1, index_i = 0, index_j = 0;
 		for (int i = 1; i <= Board_Size; i++) {
 			for (int j = 1; j <= Board_Size; j++) {
@@ -650,7 +651,7 @@ void Game_Board::draw() {
 void Game_Board::calc_weight() { //가중치 구하기
 	for (int i = 1; i <= Board_Size; i++) { //weight 초기화
 		for (int j = 1; j <= Board_Size; j++) {
-			if (getGBweight(i, j) < 1000) { //MARK4보다 훨씬 작은 수는 MARK4ING이 안된 것이라는 의미이므로
+			if (getGBweight(i, j) < 1000) { //MARK보다 훨씬 작은 수는 MARKING이 안된 것이라는 의미이므로
 				setGBweight(i, j, 0);
 			}
 		}
@@ -813,10 +814,136 @@ void Game_Board::calc_weight() { //가중치 구하기
 		}
 	}
 
+	check_win();
+
 	for (int j = 1; j <= Board_Size; j++) { //바둑돌이 놓여진 곳의 가중치는 고려 안하기 때문
 		for (int i = 1; i <= Board_Size; i++) {
 			if (getGBstate(i, j) != -1 && gameBoard[i][j].weight != 0) {
 				setGBweight(i, j, 0);
+			}
+		}
+	}
+}
+
+void Game_Board::check_win() {
+	//가로 체크
+	for (int i = 1; i <= Board_Size - 3; i++) {
+		for (int j = 1; j <= Board_Size; j++) {
+			int cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i + k, j) == 0)
+					cnt++;
+			}
+			if (cnt == 4) {
+				if (i == 1) {
+					if (getGBstate(i + 4, j) == -1)
+						setGBweight(i + 4, j, WIN_MARK);
+				}
+				else if (i == Board_Size - 3) {
+					if (getGBstate(i - 1, j) == -1)
+						setGBweight(i - 1, j, WIN_MARK);
+				}
+				else {
+					if (getGBstate(i + 4, j) == -1)
+						setGBweight(i + 4, j, WIN_MARK);
+					else {
+						if (getGBstate(i - 1, j) == -1)
+							setGBweight(i - 1, j, WIN_MARK);
+					}
+				}
+			}
+		}
+	}
+	//세로 체크
+	for (int i = 1; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
+			int cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i, j + k) == 0)
+					cnt++;
+			}
+			if (cnt == 4) {
+				if (j == 1) {
+					if (getGBstate(i, j + 4) == -1)
+						setGBweight(i, j + 4, WIN_MARK);
+				}
+				else if (j == Board_Size - 3) {
+					if (getGBstate(i, j - 1) == -1)
+						setGBweight(i, j - 1, WIN_MARK);
+				}
+				else {
+					if (getGBstate(i, j + 4) == -1)
+						setGBweight(i, j + 4, WIN_MARK);
+					else {
+						if (getGBstate(i, j - 1) == -1)
+							setGBweight(i, j - 1, WIN_MARK);
+					}
+				}
+			}
+		}
+	}
+	//왼쪽 위 -> 오른쪽 아래 대각선 체크
+	for (int i = 1; i <= Board_Size - 3; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
+			int cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i + k, j + k) == 0)
+					cnt++;
+			}
+			if (cnt == 4) {
+				if (i == 1) {
+					if (j + 4 <= Board_Size) {
+						if (getGBstate(i + 4, j + 4) == -1)
+							setGBweight(i + 4, j + 4, WIN_MARK);
+					}
+					
+				}
+				else if (i == Board_Size - 3) {
+					if (j - 1 >= 1) {
+						if (getGBstate(i - 1, j - 1) == -1)
+							setGBweight(i - 1, j - 1, WIN_MARK);
+					}
+				}
+				else {
+					if (getGBstate(i + 4, j + 4) == -1)
+						setGBweight(i + 4, j + 4, WIN_MARK);
+					else {
+						if (getGBstate(i - 1, j - 1) == -1)
+							setGBweight(i - 1, j - 1, WIN_MARK);
+					}
+				}
+			}
+		}
+	}
+	//오른쪽 위 -> 왼쪽 아래 대각선 체크
+	for (int i = 4; i <= Board_Size; i++) {
+		for (int j = 1; j <= Board_Size - 3; j++) {
+			int cnt = 0;
+			for (int k = 0; k < 4; k++) {
+				if (getGBstate(i - k, j + k) == 0)
+					cnt++;
+			}
+			if (cnt == 4) {
+				if (i == 4) {
+					if (j + 4 <= Board_Size) {
+						if (getGBstate(i - 4, j + 4) == -1)
+							setGBweight(i - 4, j + 4, WIN_MARK);
+					}
+				}
+				else if (i == Board_Size) {
+					if (j - 1 >= 1) {
+						if (getGBstate(i - 1, j - 1) == -1)
+							setGBweight(i - 1, j - 1, WIN_MARK);
+					}
+				}
+				else {
+					if (getGBstate(i - 4, j + 4) == -1)
+						setGBweight(i - 4, j + 4, WIN_MARK);
+					else {
+						if (getGBstate(i + 1, j - 1) == -1)
+							setGBweight(i + 1, j - 1, WIN_MARK);
+					}
+				}
 			}
 		}
 	}
