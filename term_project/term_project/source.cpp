@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include<ctime>
+#include <ctime>
 #include "Gameboard.h"
 using namespace std;
 

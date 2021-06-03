@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
-#include "location.h"
 using namespace std;
 #define Board_Size 10
 #define MARK2 9999
