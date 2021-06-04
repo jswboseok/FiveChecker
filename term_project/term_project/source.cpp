@@ -1,4 +1,3 @@
-//2016112109 Àå¼®¿î
 #include <iostream>
 #include <string>
 #include <ctime>
@@ -28,6 +27,7 @@ int main() {
 	g.init(select);
 	while (true) {
 		if (g.check_5() == true) {
+			g.draw();
 			return 0;
 		}
 		g.chakshu();

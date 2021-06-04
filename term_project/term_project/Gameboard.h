@@ -1,4 +1,3 @@
-//2016112109 장석운
 #include <iostream>
 #include <string>
 #include <cstdlib>
@@ -370,7 +369,7 @@ void Game_Board::check_blanked_3() {
 	//가로
 	for (int j = 1; j <= Board_Size; j++) {
 		for (int i = 1; i <= Board_Size - 3; i++) {
-			if (getGBstate(i, j) == 1 && getGBstate(i + 3, j) == 1) {
+			if (getGBstate(i, j) == 1 && getGBstate(i + 3, j) == 1) { // 연속된 3목이 아닌, 진짜 빈 3목인지 확인
 				int cnt = 0, blank = 0, index = i;
 				for (int k = 1; k < 3; k++) {
 					if (getGBstate(i + k, j) == 1)
