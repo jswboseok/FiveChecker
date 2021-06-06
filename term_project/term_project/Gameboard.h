@@ -10,35 +10,33 @@ using namespace std;
 #define MARK3 99999 
 #define MARK4 999999 
 #define WIN_MARK 9999999 
-
+//2016112109 장석운
 
 typedef struct spot { //한 지점의 상태값과 가중치
-	int state; // 상태값
+	int state; // 상태값 나의 수 1, 컴퓨터의 수 0, 빈 곳 -1
 	int weight; // 가중치
 }spot;
 
 class Game_Board {
-public:
-	//Location location; //바둑판 위에서 위치를 잡기 위한 멤버 변수
-	spot gameBoard[Board_Size + 1][Board_Size + 1]; //바둑판 선언
-	int turn; //1 == 내 차례, 0 == 컴퓨터 차례
-public:
-	void chakshu(); //한 점에 착수
-
+private:
 	void check_opened_3(); //열린 3목 확인
 	void check_blanked_3(); //띈 3목 확인
 	void check_closed_4(); //닫힌 4목 확인
 	void check_blanked_4(); //띈 4목 확인
-	void check_win();
-	
-	bool check_5(); //승리조건 확인
 	int getGBstate(int r, int c); //한 지점의 state 불러옴
 	int getGBweight(int r, int c); //한 지점의 가중치 불러옴
 	void setGBstate(int r, int c, int value); //한 지점의 state 설정
 	void setGBweight(int r, int c, int value); //한 지점의 가중치 설정
+	void calc_weight(); // weight 계산, 이를 통해 컴퓨터가 올바른 수를 놓을 수 있도록 함
+	void check_win();
+public:
+	//Location location; //바둑판 위에서 위치를 잡기 위한 멤버 변수
+	spot gameBoard[Board_Size + 1][Board_Size + 1]; //바둑판 선언
+	int turn; //1 == 내 차례, 0 == 컴퓨터 차례
+	void chakshu(); //한 점에 착수
+	bool check_5(); //승리조건 확인
 	void draw(); //오목판 그리기
 	void init(int); //오목판 초기화
-	void calc_weight(); // weight 계산, 이를 통해 컴퓨터가 올바른 수를 놓을 수 있도록 함
 };
 
 /*처음 게임보드를 초기화하는 함수. 모든 점의 state는 -1, weight는 0으로 초기화한다.*/ 
