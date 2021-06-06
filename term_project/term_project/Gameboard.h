@@ -10,7 +10,6 @@ using namespace std;
 #define MARK3 99999 
 #define MARK4 999999 
 #define WIN_MARK 9999999 
-//2016112109 장석운
 
 typedef struct spot { //한 지점의 상태값과 가중치
 	int state; // 상태값 나의 수 1, 컴퓨터의 수 0, 빈 곳 -1

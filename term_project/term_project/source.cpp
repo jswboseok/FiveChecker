@@ -3,7 +3,6 @@
 #include <ctime>
 #include "Gameboard.h"
 using namespace std;
-//2016112109 Àå¼®¿î
 
 int main() {
 	srand((unsigned int)time(NULL));
